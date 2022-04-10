@@ -23,9 +23,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
-
+	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 )
 
@@ -88,15 +87,6 @@ func NewConnection(t tLogger, port int) *nats.Conn {
 		return nil
 	}
 	return nc
-}
-
-// NewEConn
-func NewEConn(t tLogger) *nats.EncodedConn {
-	ec, err := nats.NewEncodedConn(NewDefaultConnection(t), nats.DEFAULT_ENCODER)
-	if err != nil {
-		t.Fatalf("Failed to create an encoded connection: %v\n", err)
-	}
-	return ec
 }
 
 ////////////////////////////////////////////////////////////////////////////////

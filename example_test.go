@@ -19,7 +19,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/nats-io/nats.go"
+	nats "github.com/nats-io/nats.go"
 )
 
 // Shows different ways to create a Conn.
@@ -177,106 +177,6 @@ func ExampleSubscription_AutoUnsubscribe() {
 func ExampleConn_Close() {
 	nc, _ := nats.Connect(nats.DefaultURL)
 	nc.Close()
-}
-
-// Shows how to wrap a Conn into an EncodedConn
-func ExampleNewEncodedConn() {
-	nc, _ := nats.Connect(nats.DefaultURL)
-	c, _ := nats.NewEncodedConn(nc, "json")
-	c.Close()
-}
-
-// EncodedConn can publish virtually anything just
-// by passing it in. The encoder will be used to properly
-// encode the raw Go type
-func ExampleEncodedConn_Publish() {
-	nc, _ := nats.Connect(nats.DefaultURL)
-	c, _ := nats.NewEncodedConn(nc, "json")
-	defer c.Close()
-
-	type person struct {
-		Name    string
-		Address string
-		Age     int
-	}
-
-	me := &person{Name: "derek", Age: 22, Address: "85 Second St"}
-	c.Publish("hello", me)
-}
-
-// EncodedConn's subscribers will automatically decode the
-// wire data into the requested Go type using the Decode()
-// method of the registered Encoder. The callback signature
-// can also vary to include additional data, such as subject
-// and reply subjects.
-func ExampleEncodedConn_Subscribe() {
-	nc, _ := nats.Connect(nats.DefaultURL)
-	c, _ := nats.NewEncodedConn(nc, "json")
-	defer c.Close()
-
-	type person struct {
-		Name    string
-		Address string
-		Age     int
-	}
-
-	c.Subscribe("hello", func(p *person) {
-		fmt.Printf("Received a person! %+v\n", p)
-	})
-
-	c.Subscribe("hello", func(subj, reply string, p *person) {
-		fmt.Printf("Received a person on subject %s! %+v\n", subj, p)
-	})
-
-	me := &person{Name: "derek", Age: 22, Address: "85 Second St"}
-	c.Publish("hello", me)
-}
-
-// BindSendChan() allows binding of a Go channel to a nats
-// subject for publish operations. The Encoder attached to the
-// EncodedConn will be used for marshaling.
-func ExampleEncodedConn_BindSendChan() {
-	nc, _ := nats.Connect(nats.DefaultURL)
-	c, _ := nats.NewEncodedConn(nc, "json")
-	defer c.Close()
-
-	type person struct {
-		Name    string
-		Address string
-		Age     int
-	}
-
-	ch := make(chan *person)
-	c.BindSendChan("hello", ch)
-
-	me := &person{Name: "derek", Age: 22, Address: "85 Second St"}
-	ch <- me
-}
-
-// BindRecvChan() allows binding of a Go channel to a nats
-// subject for subscribe operations. The Encoder attached to the
-// EncodedConn will be used for un-marshaling.
-func ExampleEncodedConn_BindRecvChan() {
-	nc, _ := nats.Connect(nats.DefaultURL)
-	c, _ := nats.NewEncodedConn(nc, "json")
-	defer c.Close()
-
-	type person struct {
-		Name    string
-		Address string
-		Age     int
-	}
-
-	ch := make(chan *person)
-	c.BindRecvChan("hello", ch)
-
-	me := &person{Name: "derek", Age: 22, Address: "85 Second St"}
-	c.Publish("hello", me)
-
-	// Receive the publish directly on a channel
-	who := <-ch
-
-	fmt.Printf("%v says hello!\n", who)
 }
 
 func ExampleJetStream() {

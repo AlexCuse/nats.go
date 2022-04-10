@@ -15,7 +15,6 @@ package nats
 
 import (
 	"context"
-	"reflect"
 )
 
 // RequestMsgWithContext takes a context, a subject and payload
@@ -213,33 +212,4 @@ func (nc *Conn) FlushWithContext(ctx context.Context) error {
 	}
 
 	return err
-}
-
-// RequestWithContext will create an Inbox and perform a Request
-// using the provided cancellation context with the Inbox reply
-// for the data v. A response will be decoded into the vPtr last parameter.
-func (c *EncodedConn) RequestWithContext(ctx context.Context, subject string, v interface{}, vPtr interface{}) error {
-	if ctx == nil {
-		return ErrInvalidContext
-	}
-
-	b, err := c.Enc.Encode(subject, v)
-	if err != nil {
-		return err
-	}
-	m, err := c.Conn.RequestWithContext(ctx, subject, b)
-	if err != nil {
-		return err
-	}
-	if reflect.TypeOf(vPtr) == emptyMsgType {
-		mPtr := vPtr.(*Msg)
-		*mPtr = *m
-	} else {
-		err := c.Enc.Decode(m.Subject, m.Data, vPtr)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

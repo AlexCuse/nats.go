@@ -36,7 +36,6 @@ import (
 )
 
 func client(t *testing.T, s *server.Server, opts ...Option) *Conn {
-	t.Helper()
 	nc, err := Connect(s.ClientURL(), opts...)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
